@@ -78,6 +78,9 @@ void Vehicle::drive()
             {
                 // request entry to the current intersection (using async)
                 auto ftrEntryGranted = std::async(&Intersection::addVehicleToQueue, _currDestination, get_shared_this());
+                // return is a future object, inputs: class method want to start thread with, 
+                // class instance, followed by all inputs to the class method (in this case a vehicle)
+                // first input could be launch type (before class method)
 
                 // wait until entry has been granted
                 ftrEntryGranted.get();

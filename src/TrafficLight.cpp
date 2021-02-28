@@ -98,11 +98,18 @@ void TrafficLight::cycleThroughPhases()
     long timeSinceLastUpdate = 0;
     long timeSinceLastTrafficLightCycle = 0;
 
+    // I had initially left below 3 lines within the inf loop.
+    // Reviewer: Here you are resetting the random seed on every iteration and setting a new distribution which can be quite performance intensive. Since this is not required here it would be better to move this part out of the loop to improve the performance of your application.
+    std::random_device rd;
+    std::mt19937 eng(rd());
+    std::uniform_int_distribution<> distr(4000, 6000);  // give me a number between these two
+
     while (true)
     {
         // sleep at every iteration to reduce CPU usage
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
         // putting locks down here (or further below) will cause a lockup to the simulation! Why?
+        // Reviewer comment:  Here the lockup simply stems from the fact that as you already insinuated, you'd need to properly coordinate how that lock is acquired since all threads try to reach it simultaneously. Of course this problem is relaxed somewhat by introducing a delay as it was shown in the course.
         // lck.lock();
         // std::cout << "TrafficLight cycleThroughPhases is still running!" << std::endl;
         // lck.unlock();
@@ -114,13 +121,11 @@ void TrafficLight::cycleThroughPhases()
             if (!foundTrafficLightCycleTime)
             {
                 foundTrafficLightCycleTime = true;
-                std::random_device rd;
-                std::mt19937 eng(rd());
-                std::uniform_int_distribution<> distr(4000, 6000);  // give me a number between these two
                 trafficLightCycleDelta = distr(eng);
-                // lck.lock();
-                // std::cout << "TrafficLight trafficLightCycleDelta: " << trafficLightCycleDelta <<  " for thread id = " << std::this_thread::get_id() << "" << std::endl;
-                // lck.unlock();
+                lck.lock();
+                std::cout << "TrafficLight trafficLightCycleDelta: " << trafficLightCycleDelta <<  " for thread id = " << std::this_thread::get_id() << "" << std::endl;
+                // Reviewer: Since no shared resource is being blocked here you should be able to just go ahead and print this information for debugging purposes.
+                lck.unlock();
             }
 
             if (foundTrafficLightCycleTime && timeSinceLastTrafficLightCycle >= trafficLightCycleDelta)

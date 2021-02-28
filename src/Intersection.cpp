@@ -87,7 +87,8 @@ void Intersection::addVehicleToQueue(std::shared_ptr<Vehicle> vehicle)
     std::cout << "Intersection #" << _id << ": Vehicle #" << vehicle->getID() << " is granted entry." << std::endl;
 
     // FP.6b : use the methods TrafficLight::getCurrentPhase and TrafficLight::waitForGreen to block the execution until the traffic light turns green.
-    if (_trafficLight.getCurrentPhase() != TrafficLightPhase::green)
+    while (_trafficLight.getCurrentPhase() != TrafficLightPhase::green)
+    // "if" loop still works in above line, but reviewer's comment: By utilizing a while loop here you could make sure to catch some edge cases timing wise that currently are slipping through with the if statement.
     {
         // note that the below line returns only once per green light (once for all the vehicles!)
         // if we remove the if condition above and run below line for all the vehicles,
